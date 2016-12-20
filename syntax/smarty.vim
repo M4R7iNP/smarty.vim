@@ -20,7 +20,7 @@ syn case ignore
 
 runtime! syntax/html.vim
 unlet b:current_syntax
-syn cluster htmlPreproc add=smartyZone add=smartyComment add=smartyEndTag
+syn cluster htmlPreproc add=smartyZone add=smartyComment add=smartyEndTag add=smartyTranslatedString
 
 syn keyword smartyTagName contained capture config_load include include_php
 syn keyword smartyTagName contained insert ldelim rdelim literal
@@ -215,24 +215,30 @@ syn match smartyMaybeVariable contained "\(\(^\|[^\\]\|\\\\\)\$\)\@<=\h\w*"
 syn match smartyEscapedVariable contained "\\$\h\w*"
 
 syn region smartyInBracket    contained matchgroup=Constant start=+\[+ end=+\]+ contains=smartyVariable
-syn region smartyInBacktick   contained matchgroup=Constant start=+\`+ end=+\`+ contains=smartyVariable
-syn region smartyStringDouble contained matchgroup=Constant start=+"+  end=+"+  contains=smartyMaybeVariable, smartyInBacktick, smartyMaybeDollarSign keepend
+syn region smartyInBacktick   contained matchgroup=Constant start=+\`+ skip=+\\`+ end=+\`+ contains=smartyVariable
+syn region smartyStringDouble contained matchgroup=Constant start=+"+  skip=+\\"+ end=+"+  contains=smartyMaybeVariable, smartyInBacktick, smartyMaybeDollarSign keepend
+syn region smartyStringDouble contained matchgroup=Constant start=+'+  skip=+\\'+ end=+'+  keepend
 
 syn match smartyGlue contained "\.\|\->"
 
 
 syn region smartyModifier  contained matchgroup=Statement start=+||\@!+      end=+\ze:\|\>+
 syn region smartyParameter contained matchgroup=Statement start=+:+          end=+\ze\(}\||\)+ contains=smartyVariable, smartyDollarSign, smartyGlue, smartyInBracket, smartyStringDouble contained
-syn region smartyZone                matchgroup=Statement start="{\s\{-}[a-z$]\@=" end="}" contains=smartyParameter, smartyProperty, smartyGlue, smartyModifier, smartyDollarSign, smartyInBracket, smartyStringDouble, smartyVariable, smartyString, smartyBlock, smartyTagName, smartyConstant, smartyInFunc, @smartyTags, smartyRepeat, smartyNumber, smartyBoolean, smartyOperator, smartyTodo
+syn region smartyZone                matchgroup=Statement start="{\s\{-}[a-z$"'(]\@=" end="}" contains=smartyParameter, smartyProperty, smartyGlue, smartyModifier, smartyDollarSign, smartyInBracket, smartyStringDouble, smartyVariable, smartyString, smartyBlock, smartyTagName, smartyConstant, smartyInFunc, @smartyTags, smartyRepeat, smartyNumber, smartyBoolean, smartyOperator, smartyTodo
 syn region smartyEndTag   matchgroup=Statement start="{/"  end="}"  contains=@smartyTags
 syn region smartyComment  matchgroup=Comment   start="{\*" end="\*}" contains=smartyTodo
 
 syn keyword smartyTodo   contained FIXME NOTE TODO OPTIMIZE XXX
 
-syn region  htmlString   contained start=+"+ end=+"+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc,smartyZone
-syn region  htmlString   contained start=+'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc,smartyZone
+syn region  htmlString   contained start=+"+ skip=+\\"+ end=+"+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc,smartyZone
+syn region  htmlString   contained start=+'+ skip=+\\'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc,smartyZone
   " syn region htmlLink start="<a\>\_[^>]*\<href\>" end="</a>"me=e-4 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc,smartyZone
 
+" conceal <strong>{"Welcome"|_}</strong> as <strong>Welcome</strong>
+if exists('g:smarty_conceal_translated_strings')
+    syn region smartyTranslatedString matchgroup=Statement start=+{"\(.*"|_}\)\@=+ end=+"|_}+ keepend concealends
+    hi smartyTranslatedString gui=underline cterm=underline ctermfg=224 guifg=Orange
+endif
 
 if version >= 508 || !exists("did_smarty_syn_inits")
   if version < 508
