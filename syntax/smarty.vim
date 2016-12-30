@@ -236,7 +236,7 @@ syn region  htmlString   contained start=+'+ skip=+\\'+ end=+'+ contains=htmlSpe
 
 " conceal <strong>{"Welcome"|_}</strong> as <strong>Welcome</strong>
 if exists('g:smarty_conceal_translated_strings')
-    syn region smartyTranslatedString matchgroup=Statement start=+{"\(.*"|_}\)\@=+ end=+"|_}+ keepend concealends
+    syn region smartyTranslatedString matchgroup=Statement start=+{"\(.*"|_}\)\@=+ end=+"|_}+ keepend concealends contains=@Spell
     hi smartyTranslatedString gui=underline cterm=underline ctermfg=224 guifg=Orange
 endif
 
